@@ -1,10 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
  
-const char *ssid     = "WTF?";
-const char *password = "Depakine13579";
+const char *ssid     = "wifi_name";
+const char *password = "wifi_password";
  
-const String host = "192.168.0.105";
+const String host = "your_host";
 
 // creating custom rx/tx
 SoftwareSerial customSerial(D2, D3);
