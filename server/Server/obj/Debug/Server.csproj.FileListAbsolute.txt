@@ -1,0 +1,5 @@
+D:\Projects\GoGreen\Server\Server\bin\Debug\Server.exe
+D:\Projects\GoGreen\Server\Server\bin\Debug\Server.pdb
+D:\Projects\GoGreen\Server\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
+D:\Projects\GoGreen\Server\Server\obj\Debug\Server.exe
+D:\Projects\GoGreen\Server\Server\obj\Debug\Server.pdb
