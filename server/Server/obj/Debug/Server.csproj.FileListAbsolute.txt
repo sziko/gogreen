@@ -3,3 +3,8 @@ D:\Projects\GoGreen\Server\Server\bin\Debug\Server.pdb
 D:\Projects\GoGreen\Server\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
 D:\Projects\GoGreen\Server\Server\obj\Debug\Server.exe
 D:\Projects\GoGreen\Server\Server\obj\Debug\Server.pdb
+C:\Users\nagy_\Desktop\gogreen\server\Server\bin\Debug\Server.exe
+C:\Users\nagy_\Desktop\gogreen\server\Server\bin\Debug\Server.pdb
+C:\Users\nagy_\Desktop\gogreen\server\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
+C:\Users\nagy_\Desktop\gogreen\server\Server\obj\Debug\Server.exe
+C:\Users\nagy_\Desktop\gogreen\server\Server\obj\Debug\Server.pdb

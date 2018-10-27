@@ -1,6 +1,6 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial newSerial(3, 2);
+SoftwareSerial newSerial(8, 7);
 int i = 1;
 
 void setup() {
@@ -13,18 +13,19 @@ void setup() {
 
 void sendMessage(String msg) {
   newSerial.println(msg);
+  Serial.println("ARDUINO: " + msg);
 }
 
 void listenForMessage() {
-  if(newSerial.available() > 0) {
-    Serial.println(newSerial.readString());
+  if(newSerial.available()) {
+    String msg = newSerial.readString();
+    Serial.println("SERVER: " + msg);
   }
 }
 
 void loop() {
-
-   sendMessage("Message " + String(i));
-   ++i;
-   delay(5000);
+   sendMessage("Test Message " + String(i));
    listenForMessage();
+   ++i;
+   delay(10000);
 }

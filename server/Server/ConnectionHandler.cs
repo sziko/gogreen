@@ -13,7 +13,7 @@ namespace Server
         private Thread _thread;
         private readonly String _remoteEndPoint;
 
-        private MemoryStream _buffer = new MemoryStream();
+        private MemoryStream _buffer;
 
         public ConnectionHandler(Socket connection)
         {
@@ -36,27 +36,28 @@ namespace Server
         }
 
         //asa vor fi trimise datele si de pe server si de pe arduino
-        private void SendMessage(byte[] data)
-        {
-            int dataLength = data.Length;
-            byte[] totalBytes = new byte[4 + dataLength];
-            totalBytes[0] = (byte)dataLength;
-            totalBytes[1] = (byte)(dataLength >> 8);
-            totalBytes[2] = (byte)(dataLength >> 16);
-            totalBytes[3] = (byte)(dataLength >> 24);
-
-            for (int i = 0; i < dataLength; i++)
-            {
-                totalBytes[i + 4] = data[i];
-            }
-
-            _connection.Send(totalBytes, 4 + dataLength, SocketFlags.None);
-        }
+//        private void SendMessage(byte[] data)
+//        {
+//            int dataLength = data.Length;
+//            byte[] totalBytes = new byte[4 + dataLength];
+//            totalBytes[0] = (byte)dataLength;
+//            totalBytes[1] = (byte)(dataLength >> 8);
+//            totalBytes[2] = (byte)(dataLength >> 16);
+//            totalBytes[3] = (byte)(dataLength >> 24);
+//
+//            for (int i = 0; i < dataLength; i++)
+//            {
+//                totalBytes[i + 4] = data[i];
+//            }
+//
+//            _connection.Send(totalBytes, 4 + dataLength, SocketFlags.None);
+//        }
 
         private void Listen()
         {
             while (IsConnected())
             {
+                _buffer = new MemoryStream();
                 //4 bytes lungimea mesajului
                 //the message bytes
                 byte[] rawMessage = new byte[BufferSize];
@@ -84,15 +85,21 @@ namespace Server
                         _buffer.SetLength(0);
                         _buffer.Write(remainingBytes, 0, leftBytes);
                     }//altfel mai trebuie sa primim
+                    
+             
+                    String messageFromClient = DecodeMessage(_buffer.ToArray());
+                    Console.WriteLine(messageFromClient);
+                    
+                    SendResponse(messageFromClient);
                 }
 
-                //if (byteCount > 0)
-                //{
-                //    String msg = DecodeMessage(rawMessage).Substring(0, byteCount);
-                //    Console.WriteLine("{0} : {1}", _connection.RemoteEndPoint, msg);
-
-                //    SendResponse(String.Format("Response: {0}", msg));
-                //}
+//                if (byteCount > 0)
+//                {
+//                    String msg = DecodeMessage(rawMessage).Substring(0, byteCount);
+//                    Console.WriteLine("{0} : {1}", _connection.RemoteEndPoint, msg);
+//
+//                    SendResponse(String.Format("Response: {0}", msg));
+//                }
             }
 
             Console.WriteLine("Server: {0} disconnected!", _remoteEndPoint);

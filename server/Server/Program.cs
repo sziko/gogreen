@@ -4,7 +4,7 @@
     {
         public static void Main(string[] args)
         {
-            ServerCore.Instance.CreateServer(80);   
+            ServerCore.Instance.CreateServer(6655);
         }
     }
 }

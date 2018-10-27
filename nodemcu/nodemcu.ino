@@ -1,13 +1,13 @@
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
  
-const char *ssid     = "wifi_name";
-const char *password = "wifi_password";
- 
-const String host = "your_host";
+const char *ssid     = "WTF?";
+const char *password = "Depakine13579";
+
+const String host = "192.168.0.105";
 
 // creating custom rx/tx
-SoftwareSerial customSerial(D2, D3);
+SoftwareSerial customSerial(D7, D8);
  
 void setup() {
   Serial.begin(9600);
@@ -29,7 +29,7 @@ void setup() {
   }
 }
 
-const int port = 80;
+const int port = 6655;
 bool isConnected = false;
 WiFiClient client;
 
@@ -49,6 +49,7 @@ void connectToServer() {
   }
 }
 
+
 void sendMessage(String msg) {
   if(isConnected){
     client.print(msg);
@@ -58,17 +59,38 @@ void sendMessage(String msg) {
 void listenToArduino() {
   // check for arduino serial input and send it to the server
   if(customSerial.available()) {
-    sendMessage(customSerial.readString());
+    String msg = customSerial.readString();
+    Serial.println("ARDUINO: " + msg);
+    sendMessage(msg);
   }
 }
 
 void listenToServer() {
   // Read response from server and send it to arduino serial
   if(client.available()){
-    String line = client.readString();
-    customSerial.println(line);
+    String msg = client.readString();
+    customSerial.println(msg);
+    Serial.println("SERVER: " + msg);
   }
 }
+
+//void sendMessage(byte *data) {
+//  int dataLenght = sizeof(data);
+//  byte *totalBytes = (byte*) malloc((dataLenght * sizeof(byte)) + 4);
+//  totalBytes[0] = (byte) dataLenght;
+//  totalBytes[1] = (byte) (dataLenght >> 8);
+//  totalBytes[2] = (byte) (dataLenght >> 16);
+//  totalBytes[3] = (byte) (dataLenght >> 24);
+//
+//  for(int i = 0; i < dataLenght; ++i) {
+//    totalBytes[i + 4] = data[i];
+//  }
+//
+//  Serial.println("TO_SEND: " + String(sizeof(totalBytes) + 4));
+//  if(isConnected) {
+//    client.write(totalBytes, sizeof(totalBytes) + 4);
+//  }
+//}
 
 void verifyCommand(String command){
   
@@ -78,19 +100,10 @@ void loop() {
   connectToServer(); 
   listenToServer();
   listenToArduino();
-
-    // check for serial input and send to server
-  if(Serial.available()){
-    String msg = Serial.readString();
-
-    if(msg == "quit"){
-      client.stop();
-    }
-    else if(msg == "connect"){
-      isConnected = false;
-    }
-    else {
-      sendMessage(msg); 
-    }
-  }
+//  if(Serial.available()) {
+//    String msg = Serial.readString();
+//    Serial.println("MSG: " + msg);
+//    Serial.println("BYTES: " + String(sizeof(msg)));
+//    sendMessage(msg);
+//  }
 }
