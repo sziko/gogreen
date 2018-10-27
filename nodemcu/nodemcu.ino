@@ -1,21 +1,31 @@
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
+ #include <WiFiUdp.h>
  
-const char *ssid     = "WTF?";
-const char *password = "Depakine13579";
+const char *ssid     = "UPM-Student";
+const char *password = "STud123!?";
 
 const String host = "192.168.0.105";
 
 // creating custom rx/tx
 SoftwareSerial customSerial(D7, D8);
+
+bool _connectedToServer=false;
+bool _listeningToUdp=false;
+
+WiFiUDP Udp;
+unsigned int localUdpPort = 4210;
+char incomingPacketBuffer[12];
  
 void setup() {
+  
+
   Serial.begin(9600);
   customSerial.begin(9600);
   delay(100);
- 
+ Serial.setTimeout(50);
   // Connect to WiFi network
- 
+   customSerial.setTimeout(50);
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -27,83 +37,113 @@ void setup() {
     delay(500);
     Serial.print(".");
   }
+ 
 }
 
 const int port = 6655;
-bool isConnected = false;
 WiFiClient client;
-
-void connectToServer() {
-  if(!isConnected) {
-     Serial.println(host);
-  
-    // Try to connect to @host
-    if (!client.connect(host, port)) {
-      Serial.println("connection failed");
-      return;
-    }
-
-    Serial.print("Connected to ");
-    Serial.println(host + ":" + port);
-    isConnected = true;
-  }
-}
 
 
 void sendMessage(String msg) {
-  if(isConnected){
+  if(_connectedToServer){
     client.print(msg);
   }
 }
 
-void listenToArduino() {
-  // check for arduino serial input and send it to the server
-  if(customSerial.available()) {
-    String msg = customSerial.readString();
-    Serial.println("ARDUINO: " + msg);
-    sendMessage(msg);
-  }
-}
+const int bufferLength=1024;
+byte* serverReadBuffer=new byte[bufferLength];
 
 void listenToServer() {
-  // Read response from server and send it to arduino serial
-  if(client.available()){
-    String msg = client.readString();
-    customSerial.println(msg);
-    Serial.println("SERVER: " + msg);
+  if(client.available()>0){
+    int count=client.read(serverReadBuffer,bufferLength);
+    customSerial.write(serverReadBuffer,count); 
+    Serial.println(count);
   }
 }
 
-//void sendMessage(byte *data) {
-//  int dataLenght = sizeof(data);
-//  byte *totalBytes = (byte*) malloc((dataLenght * sizeof(byte)) + 4);
-//  totalBytes[0] = (byte) dataLenght;
-//  totalBytes[1] = (byte) (dataLenght >> 8);
-//  totalBytes[2] = (byte) (dataLenght >> 16);
-//  totalBytes[3] = (byte) (dataLenght >> 24);
-//
-//  for(int i = 0; i < dataLenght; ++i) {
-//    totalBytes[i + 4] = data[i];
-//  }
-//
-//  Serial.println("TO_SEND: " + String(sizeof(totalBytes) + 4));
-//  if(isConnected) {
-//    client.write(totalBytes, sizeof(totalBytes) + 4);
-//  }
-//}
+bool listenForServer(IPAddress& ipAddress)
+{
+  if(_connectedToServer==false)
+  {
+    if(_listeningToUdp==false)
+    {
+      Udp.begin(localUdpPort);
+      Serial.print("Listening for server packet!");
+      _listeningToUdp=true;
+    }
 
-void verifyCommand(String command){
+    int packetSize = Udp.parsePacket();
+    
+    if (packetSize)
+    {
+      int len = Udp.read(incomingPacketBuffer, 12);
+      if(len==3)
+      {
+        if(incomingPacketBuffer[0]==0&&incomingPacketBuffer[1]==1&&incomingPacketBuffer[2]==2)//our server package
+        {
+          ipAddress=Udp.remoteIP();
+          return true;
+        }
+      }
+     }   
+     return false;
+  }
+  else
+  {
+    if(_listeningToUdp==true)
+    {
+      Udp.begin(localUdpPort);
+      Serial.print("Stopped listening for server packet!");
+      Udp.stop();
+      _listeningToUdp=false;
+    }
+     return true;
+  }
   
 }
 
 void loop() {
-  connectToServer(); 
-  listenToServer();
-  listenToArduino();
-//  if(Serial.available()) {
-//    String msg = Serial.readString();
-//    Serial.println("MSG: " + msg);
-//    Serial.println("BYTES: " + String(sizeof(msg)));
-//    sendMessage(msg);
-//  }
+ 
+  IPAddress ipAddress;
+  bool foundServerIp = listenForServer(ipAddress);
+
+  if(foundServerIp)
+  {
+    if(_connectedToServer==false)
+    {
+      Serial.printf("Found Server Ip:%s, connecting!",ipAddress.toString().c_str());
+      
+    // Try to connect to @host
+    if (client.connect(ipAddress, port)==false) 
+    {
+      Serial.println("connection failed!");
+    }
+    else
+    {
+      Serial.println("connection succeded!");
+      _connectedToServer=true;
+    }
+    
+    }
+    else
+    {
+      listenToServer();
+      if(customSerial.available()) {
+    String msg = customSerial.readString();
+    Serial.println("ARDUINO: " + msg);
+    sendMessage(msg);
+  }
+  
+      
+        if(Serial.available()>0) 
+        {
+    String msg = Serial.readString();
+    Serial.println("Sending: " + msg);
+    sendMessage(msg);
+  }
+  
+    }
+    
+  }
+  
 }

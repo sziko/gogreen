@@ -1,31 +1,36 @@
 #include <SoftwareSerial.h>
 
 SoftwareSerial newSerial(8, 7);
-int i = 1;
 
 void setup() {
  Serial.begin(9600);
- Serial.println("Started...");
+ Serial.println("Waiting for pc");
+ while (!Serial) {
+  delay(10);
+  }
+Serial.println("Pc connected"); 
+
+
+ Serial.println("Waiting for wifi");
  newSerial.begin(9600);
- delay(1000);
- Serial.println("Data is being sent...");
+while (!newSerial) {
+  delay(10);
+  }
+  
+ 
+ Serial.println("Wifi connected");
 }
 
-void sendMessage(String msg) {
-  newSerial.println(msg);
-  Serial.println("ARDUINO: " + msg);
-}
+void loop()
+{
+  if(Serial.available()) 
+  {
+    newSerial.println(Serial.readString());
+  }
 
-void listenForMessage() {
   if(newSerial.available()) {
     String msg = newSerial.readString();
     Serial.println("SERVER: " + msg);
   }
-}
-
-void loop() {
-   sendMessage("Test Message " + String(i));
-   listenForMessage();
-   ++i;
-   delay(10000);
+  
 }
