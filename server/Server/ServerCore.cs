@@ -48,6 +48,8 @@ namespace Server
                     
                     ConnectionHandler connection = new ConnectionHandler(socket);
                     connection.InitializeConnection();
+
+
                 }
                 catch (Exception e)
                 {
