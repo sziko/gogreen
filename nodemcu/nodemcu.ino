@@ -2,10 +2,10 @@
 #include <SoftwareSerial.h>
 #include <WiFiUdp.h>
 
-const char *ssid = "UPM-Student";
-const char *password = "STud123!?";
+const char *ssid = "ssid";
+const char *password = "pwd";
 
-const String host = "192.168.0.105";
+// const String host = "your_host";
 
 // creating custom rx/tx
 SoftwareSerial customSerial(D7, D8);
