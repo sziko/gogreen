@@ -2,13 +2,19 @@
 #include <SoftwareSerial.h>
 #include <WiFiUdp.h>
 
-const char *ssid = "UPM-Student";
-const char *password = "STud123!?";
+//const char *ssid = "UPM-Student";
+//const char *password = "STud123!?";
+
+const char *ssid = "RomTelecom-WEP-0232";
+const char *password = "277TCTVZCA5LU";
 
 const String host = "192.168.0.105";
 
+#define RXPin D7
+#define TXPin D8
+
 // creating custom rx/tx
-SoftwareSerial customSerial(D7, D8);
+SoftwareSerial customSerial(RXPin, TXPin);
 
 bool _connectedToServer = false;
 bool _listeningToUdp = false;
@@ -28,16 +34,17 @@ void setup() {
   Serial.begin(9600);
   customSerial.begin(9600);
 
-  Serial.setTimeout(50);
-  customSerial.setTimeout(50);
-  
+  pinMode(RXPin, INPUT);
+  pinMode(TXPin, OUTPUT);
+
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    delay(100);
     Serial.print(".");
   }
 
+  Serial.print("Connected to wifi!");
 }
 
 bool listenForServer(IPAddress& ipAddress)
@@ -91,7 +98,7 @@ void loop() {
     if (_connectedToServer == false)
     {
       Serial.printf("Found Server Ip:%s, connecting!", ipAddress.toString().c_str());
-      
+
       if (client.connect(ipAddress, port) == false)
       {
         Serial.println("connection failed!");
@@ -109,15 +116,35 @@ void loop() {
       {
 
         if (customSerial.available()) {
-          String msg = customSerial.readString();
+          Serial.print("arduino->server  ");
+          int count = customSerial.readBytes(serverReadBuffer, bufferLength);
+          Serial.print(count);
+          Serial.print(" bytes \n");
+
           if (_connectedToServer) {
-            client.print(msg);
+            Serial.print(" Sending \n");
+            client.write(serverReadBuffer, count);
+          }
+          else
+          {
+            Serial.print(" Not connected to server! \n");
           }
         }
 
         if (client.available() > 0) {
+          Serial.print("server->arduino ");
           int count = client.read(serverReadBuffer, bufferLength);
-          customSerial.write(serverReadBuffer, count);
+          Serial.print(count);
+          Serial.print(" bytes \n");
+          //customSerial.write(serverReadBuffer, count);
+          for (int i = 0; i < count; i++)
+            Serial.print(serverReadBuffer[i]);
+          Serial.print("\n");
+
+          if(serverReadBuffer[0]==3)
+              {
+                client.write(serverReadBuffer,1);
+              }
         }
       }
       else

@@ -1,9 +1,13 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial newSerial(8, 7);
+#define RXPin 7
+#define TXPin 8
+SoftwareSerial newSerial(RXPin, TXPin);
 
 void setup() {
   Serial.begin(9600);
+  newSerial.begin(74880);
+  
   Serial.println("Waiting for pc");
   while (!Serial) {
     delay(10);
@@ -12,12 +16,9 @@ void setup() {
 
 
   Serial.println("Waiting for wifi");
-  newSerial.begin(9600);
   while (!newSerial) {
     delay(10);
   }
-
-
   Serial.println("Wifi connected");
 }
 
